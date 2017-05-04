@@ -1,0 +1,26 @@
+const {find} = require('./find')
+const api = require('../apis/memory')
+const Bucket = require('../data/bucket')
+const {test} = require('ava')
+const {insertSomeData, numCompare, binder} = require('../utils/testutils')
+
+test('insertions', (t) => {
+	const {is, deepEqual:eq} = binder(t)
+	let tree = new Bucket(api, 1, 3, numCompare)
+	tree = insertSomeData(tree)
+
+	is(find(tree, 1), 'one')
+	is(find(tree, 0), undefined)
+	is(find(tree, 2), 'two')
+	is(find(tree, 11), undefined)
+	is(find(tree, 87), 'eighty-seven')
+	is(find(tree, 88), 'eighty-eight')
+	is(find(tree, 90), 'ninety')
+	is(find(tree, 101), undefined)
+
+	const mapRange = Array.from(tree.rangeIterator(55, 86))
+	eq(mapRange, [[55, 'fifty-five'], [56, 'fifty-six'], [57, 'fifty-seven'], [80, 'eighty'], [85, 'eighty-five'], [86, 'eighty-six']])
+	eq(Array.from(tree.rangeIterator(0, 3)), [[1, 'one'], [2, 'two'], [3, 'three']])
+	eq(Array.from(tree.rangeIterator(90, 300)), [[90, 'ninety']])
+	eq(Array.from(tree.rangeIterator(300, 1000)), [])
+})
