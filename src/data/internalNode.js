@@ -3,7 +3,7 @@ const Node = require('./node')
 const {findChildIndex} = require('../utils/findChildIndex')
 
 class InternalNode extends Node {
-	constructor(api, minChildren, maxChildren, keyCompareFn, keys, children) {
+	constructor(minChildren, maxChildren, keyCompareFn, keys, children) {
 		if (!Array.isArray(keys) || !Array.isArray(children)) {
 			throw new Error(`Keys and children must be arrays, keys was ${keys} and values was ${children}.`)
 		}
@@ -16,7 +16,7 @@ class InternalNode extends Node {
 		if (typeof keyCompareFn !== 'function') {
 			throw new Error(`Key compare fn must be a function, was a ${typeof keyCompareFn}.`)
 		}
-		super(api, minChildren, maxChildren, keyCompareFn, keys, children)
+		super(minChildren, maxChildren, keyCompareFn, keys, children)
 		this.terminalNode = false
 	}
 
@@ -24,9 +24,9 @@ class InternalNode extends Node {
 		Object.assign(this, {keys, children})
 	}
 
-	*rangeIterator(minKey, maxKey) {
+	*rangeIterator(api, minKey, maxKey) {
 		const index = minKey === undefined ? 0 : findChildIndex(this, minKey)
-		yield* this.api.read(this.children[index]).rangeIterator(minKey, maxKey)
+		yield* api.read(this.children[index]).rangeIterator(api, minKey, maxKey)
 	}
 
 	toString() {

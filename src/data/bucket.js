@@ -2,7 +2,7 @@ const binarySearch = require('../utils/binarySearch')
 const Node = require('./node')
 
 class Bucket extends Node {
-	constructor(api, minChildren, maxChildren, keyCompareFn, keys = [], children = [], nextBucket, prevBucket) {
+	constructor(minChildren, maxChildren, keyCompareFn, keys = [], children = [], nextBucket, prevBucket) {
 		if (!Array.isArray(keys) || !Array.isArray(children)) {
 			throw new Error(`Keys and children must be arrays, keys was ${keys} and values was ${children}.`)
 		}
@@ -12,7 +12,7 @@ class Bucket extends Node {
 		if (typeof keyCompareFn !== 'function') {
 			throw new Error(`Key compare fn must be a function, was a ${typeof keyCompareFn}.`)
 		}
-		super(api, minChildren, maxChildren, keyCompareFn, keys, children)
+		super(minChildren, maxChildren, keyCompareFn, keys, children)
 		Object.assign(this, {nextBucket, prevBucket, terminalNode: true})
 	}
 
@@ -20,7 +20,7 @@ class Bucket extends Node {
 		Object.assign(this, {keys, children, nextBucket, prevBucket})
 	}
 
-	*rangeIterator(minKey, maxKey) {
+	*rangeIterator(api, minKey, maxKey) {
 		let fromIdx = minKey !== undefined ? binarySearch(this.keyCompareFn, minKey, this.keys) : 0
 		if (fromIdx < 0) {
 			fromIdx = -fromIdx-1
@@ -36,7 +36,7 @@ class Bucket extends Node {
 			}
 		}
 		if (this.nextBucket !== undefined && !done) {
-			yield* this.api.read(this.nextBucket).rangeIterator(undefined, maxKey)
+			yield* api.read(this.nextBucket).rangeIterator(api, undefined, maxKey)
 		}
 	}
 

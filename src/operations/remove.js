@@ -6,13 +6,13 @@ const {findChildIndex} = require('../utils/findChildIndex')
  * Modifies a bucket by removing a key/value from it.
  * Returns the passed bucket.
  */
-function removeFromBucket(bucket, key) {
+function removeFromBucket(api, bucket, key) {
 	const index = findIndex(bucket.keyCompareFn, key, bucket.keys)
 	if (index >= 0) {
 		bucket.keys.splice(index, 1)
 		bucket.children.splice(index, 1)
 	}
-	bucket.store()
+	bucket.store(api)
 	return bucket
 }
 
@@ -23,11 +23,11 @@ const BALANCE = {}, MERGE = {}
  * possible.
  * Does not mutate anything.
  */
-function selectChildAndSiblingForMerging(node, childIndex) {
+function selectChildAndSiblingForMerging(api, node, childIndex) {
 	let result = {}
 	if (childIndex > 0) {
-		const leftSib = node.api.read(node.children[childIndex - 1])
-		const rightSib = node.api.read(node.children[childIndex])
+		const leftSib = api.read(node.children[childIndex - 1])
+		const rightSib = api.read(node.children[childIndex])
 		const totalChildren = rightSib.children.length + leftSib.children.length
 		const minAcrossBoth = rightSib.minChildren + leftSib.minChildren
 		result = {
@@ -39,8 +39,8 @@ function selectChildAndSiblingForMerging(node, childIndex) {
 		}
 	}
 	if (!(result && result.action === BALANCE) && childIndex < (node.children.length - 1)) {
-		const leftSib = node.api.read(node.children[childIndex])
-		const rightSib = node.api.read(node.children[childIndex + 1])
+		const leftSib = api.read(node.children[childIndex])
+		const rightSib = api.read(node.children[childIndex + 1])
 		const totalChildren = leftSib.children.length + rightSib.children.length
 		const minAcrossBoth = leftSib.minChildren + rightSib.minChildren
 		result = {
@@ -63,47 +63,47 @@ function isUnderful(node) {
  * invariants.
  * Returns either the passed subtree root or, if there is only a single child that child.
  */
-function removeFromNode(node, key) {
+function removeFromNode(api, node, key) {
 	let childIndex = findChildIndex(node, key);
-	let child = node.api.read(node.children[childIndex])
+	let child = api.read(node.children[childIndex])
 
-	child = remove(child, key)
+	child = remove(api, child, key)
 	node.children[childIndex] = child.ref
 
 	if (isUnderful(child)) {
-		const richSibling = selectChildAndSiblingForMerging(node, childIndex)
+		const richSibling = selectChildAndSiblingForMerging(api, node, childIndex)
 		if (richSibling.action === BALANCE) {
 			const {index, left:leftSib, pivot:pivotBefore, right:rightSib} = richSibling
-			const {pivot} = balance(leftSib, pivotBefore, rightSib)
+			const {pivot} = balance(api, leftSib, pivotBefore, rightSib)
 			node.keys[index] = pivot
 		} else if (richSibling.action === MERGE) {
 			const {index, left:leftSib, pivot:pivotBefore, right:rightSib} = richSibling
-			merge(leftSib, pivotBefore, rightSib)
+			merge(api, leftSib, pivotBefore, rightSib)
 			node.children.splice(index + 1, 1)
 			node.keys.splice(index, 1)
 		} else {
 			throw new Error('i dont think this should happen')
 		}
-		node.store()
+		node.store(api)
 	}
 
 	// I'm worried that this might be wrong.  Under what circumstances should
 	// we unwrap a child?  Is it always when there is only one of them?
 	if (!node.terminalNode && node.children.length === 1) {
-		node.api.remove(node.ref)
-		return node.api.read(node.children[0])
+		api.remove(node.ref)
+		return api.read(node.children[0])
 	}
 	return node
 }
 
-function remove(node, key) {
+function remove(api, node, key) {
 	if (node instanceof Node === false) {
 		throw new Error(`Node to remove from must be a node, was ${node}`)
 	}
 	if (node.terminalNode) {
-		return removeFromBucket(node, key)
+		return removeFromBucket(api, node, key)
 	} else {
-		return removeFromNode(node, key)
+		return removeFromNode(api, node, key)
 	}
 }
 
@@ -111,7 +111,7 @@ function remove(node, key) {
  * merges two nodes together.  Afterward, all the
  * keys and children are in the node and sibling is no longer needed.
  */
-function merge(node, splitPoint, sibling) {
+function merge(api, node, splitPoint, sibling) {
 	node.children = node.children.concat(sibling.children)
 	if (node.terminalNode) {
 		node.keys = node.keys.concat(sibling.keys)
@@ -119,22 +119,22 @@ function merge(node, splitPoint, sibling) {
 
 		const nextRef = sibling.nextBucket
 		if (nextRef !== undefined) {
-			const newNext = node.api.read(nextRef)
+			const newNext = api.read(nextRef)
 			newNext.prevBucket = node.ref
-			newNext.store()
+			newNext.store(api)
 		}
 	} else {
 		node.keys = node.keys.concat(splitPoint, sibling.keys)
 	}
-	node.store()
-	node.api.remove(sibling.ref)
+	node.store(api)
+	api.remove(sibling.ref)
 }
 
 /**
  * Tries to split the children across two nodes evenly.
  * Mutates both children.
  */
-function balance(node, splitPoint, sibling) {
+function balance(api, node, splitPoint, sibling) {
 	const allChildren = node.children.slice().concat(sibling.children)
 	let middle = Math.floor(allChildren.length / 2)
 	let allKeys
@@ -148,8 +148,8 @@ function balance(node, splitPoint, sibling) {
 		node.resetData(allKeys.slice(0, middle), allChildren.slice(0, middle + 1))
 		sibling.resetData(allKeys.slice(middle + 1), allChildren.slice(middle + 1))
 	}
-	node.store()
-	sibling.store()
+	node.store(api)
+	sibling.store(api)
 	return {left: node, pivot: allKeys[middle], right: sibling}
 }
 

@@ -7,41 +7,41 @@ function numCompare(a, b) {
 	return a - b
 }
 function n(keys = [], children = []) {
-	const result = new Node(api, 2, 4, numCompare, keys, children.map((x) => x.ref))
-	result.store()
+	const result = new Node(2, 4, numCompare, keys, children.map((x) => x.ref))
+	result.store(api)
 	return result
 }
 function b(kvs, next) {
-	const result = new Bucket(api, 1, 3, numCompare, kvs.map((x) => x.key), kvs.map((x) => x.value), next ? next.ref : undefined)
-	result.store()
+	const result = new Bucket(1, 3, numCompare, kvs.map((x) => x.key), kvs.map((x) => x.value), next ? next.ref : undefined)
+	result.store(api)
 	return result
 }
 function kv(key, value = key) {
 	return {key, value}
 }
 
-function insertSomeData(tree) {
-	tree = insert(tree, 3, 'three')
-	tree = insert(tree, 1, 'one')
-	tree = insert(tree, 10, 'ten')
-	tree = insert(tree, 7, 'seven')
-	tree = insert(tree, 2, 'two')
-	tree = insert(tree, 90, 'ninety')
-	tree = insert(tree, 6, 'six')
-	tree = insert(tree, 8, 'eight')
-	tree = insert(tree, 80, 'eighty')
-	tree = insert(tree, 85, 'eighty-five')
-	tree = insert(tree, 86, 'eighty-six')
-	tree = insert(tree, 87, 'eighty-seven')
-	tree = insert(tree, 88, 'eighty-eight')
-	tree = insert(tree, 25, 'twenty-five')
-	tree = insert(tree, 9, 'nine')
-	tree = insert(tree, 52, 'fifty-two')
-	tree = insert(tree, 53, 'fifty-three')
-	tree = insert(tree, 54, 'fifty-four')
-	tree = insert(tree, 55, 'fifty-five')
-	tree = insert(tree, 56, 'fifty-six')
-	tree = insert(tree, 57, 'fifty-seven')
+function insertSomeData(api, tree) {
+	tree = insert(api, tree, 3, 'three')
+	tree = insert(api, tree, 1, 'one')
+	tree = insert(api, tree, 10, 'ten')
+	tree = insert(api, tree, 7, 'seven')
+	tree = insert(api, tree, 2, 'two')
+	tree = insert(api, tree, 90, 'ninety')
+	tree = insert(api, tree, 6, 'six')
+	tree = insert(api, tree, 8, 'eight')
+	tree = insert(api, tree, 80, 'eighty')
+	tree = insert(api, tree, 85, 'eighty-five')
+	tree = insert(api, tree, 86, 'eighty-six')
+	tree = insert(api, tree, 87, 'eighty-seven')
+	tree = insert(api, tree, 88, 'eighty-eight')
+	tree = insert(api, tree, 25, 'twenty-five')
+	tree = insert(api, tree, 9, 'nine')
+	tree = insert(api, tree, 52, 'fifty-two')
+	tree = insert(api, tree, 53, 'fifty-three')
+	tree = insert(api, tree, 54, 'fifty-four')
+	tree = insert(api, tree, 55, 'fifty-five')
+	tree = insert(api, tree, 56, 'fifty-six')
+	tree = insert(api, tree, 57, 'fifty-seven')
 
 	return tree
 }
@@ -55,4 +55,4 @@ function binder(thing) {
 	})
 }
 
-module.exports = {n, b, kv, numCompare, insertSomeData, binder}
+module.exports = {n, b, kv, numCompare, insertSomeData, binder, api}

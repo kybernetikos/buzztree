@@ -1,7 +1,7 @@
 const {balance, remove} = require('./remove')
 const {find} = require('./find')
 const {test} = require('ava')
-const {n, b, kv, insertSomeData, binder} = require('../utils/testutils')
+const {n, b, kv, insertSomeData, binder, api} = require('../utils/testutils')
 
 test("Balancing between nodes works",(t) => {
 	const {deepEqual:eq} = binder(t)
@@ -21,9 +21,9 @@ test("Balancing between nodes works",(t) => {
 		[ leftSib , rightSib ]
 	)
 
-	balance(leftSib, 15, rightSib)
+	balance(api, leftSib, 15, rightSib)
 
-	eq(Array.from(smallTree), [[1, 'one'], [5, 'five'], [10, 'ten'], [12, 'twelve'], [15, 'fifteen'], [20, 'twenty']])
+	eq(Array.from(smallTree.iterator(api)), [[1, 'one'], [5, 'five'], [10, 'ten'], [12, 'twelve'], [15, 'fifteen'], [20, 'twenty']])
 	eq(leftSib.children.length, 3)
 	eq(rightSib.children.length, 3)
 })
@@ -37,7 +37,7 @@ test("Balancing between buckets works",(t) => {
 	const smallTree = n([3, 9], [b1, b2, b3])
 	const smallTreeEntries = [[2, 'two'], [3, 'three'], [6, 'six'], [7, 'seven'], [9, 'nine'], [100, 'hundred']]
 
-	const {left, pivot, right} = balance(b1, 3, b2)
+	const {left, pivot, right} = balance(api, b1, 3, b2)
 	smallTree.keys[0] = pivot
 
 	eq(left.children, ['two', 'three'])
@@ -45,12 +45,12 @@ test("Balancing between buckets works",(t) => {
 	eq(pivot, 6)
 	eq(right.children, ['six', 'seven'])
 	eq(right.keys, [6, 7])
-	eq(Array.from(smallTree), smallTreeEntries)
+	eq(Array.from(smallTree.iterator(api)), smallTreeEntries)
 })
 
 test("balance two buckets of same size keeps them the same", (t) => {
 	const {deepEqual:eq} = binder(t)
-	const {left, pivot, right} = balance(b([kv(1, 'one')]), 2, b([kv(2, 'two')]))
+	const {left, pivot, right} = balance(api, b([kv(1, 'one')]), 2, b([kv(2, 'two')]))
 
 	eq(left.keys, [1])
 	eq(left.children, ['one'])
@@ -61,7 +61,7 @@ test("balance two buckets of same size keeps them the same", (t) => {
 
 test("balance an empty bucket with a bucket of size 2 divides the values evenly", (t) => {
 	const {deepEqual:eq} = binder(t)
-	const {left, pivot, right} = balance(b([]), 0, b([kv(1, 'one'), kv(2, 'two')]))
+	const {left, pivot, right} = balance(api, b([]), 0, b([kv(1, 'one'), kv(2, 'two')]))
 
 	eq(left.keys, [1])
 	eq(left.children, ['one'])
@@ -72,7 +72,7 @@ test("balance an empty bucket with a bucket of size 2 divides the values evenly"
 
 test("balance a bucket of size 2 with an empty bucket divides the values evenly", (t) => {
 	const {deepEqual:eq} = binder(t)
-	const {left, pivot, right} = balance(b([kv(1, 'one'), kv(2, 'two')]), 4, b([]))
+	const {left, pivot, right} = balance(api, b([kv(1, 'one'), kv(2, 'two')]), 4, b([]))
 
 	eq(left.keys, [1])
 	eq(left.children, ['one'])
@@ -89,38 +89,39 @@ test("Deletion", (t) => {
 
 	let smallTree = n([3, 9], [b1, b2, b3])
 
-	smallTree = remove(smallTree, 9)
-	eq(Array.from(smallTree), [[2, 'two'], [3, 'three'], [6, 'six'], [7, 'seven'], [100, 'hundred']])
+	console.log(smallTree)
+	smallTree = remove(api, smallTree, 9)
+	eq(Array.from(smallTree.iterator(api)), [[2, 'two'], [3, 'three'], [6, 'six'], [7, 'seven'], [100, 'hundred']])
 
-	smallTree = remove(smallTree, 3)
-	eq(Array.from(smallTree), [[2, 'two'], [6, 'six'], [7, 'seven'], [100, 'hundred']])
+	smallTree = remove(api, smallTree, 3)
+	eq(Array.from(smallTree.iterator(api)), [[2, 'two'], [6, 'six'], [7, 'seven'], [100, 'hundred']])
 
-	smallTree = remove(smallTree, 2)
-	eq(Array.from(smallTree), [[6, 'six'], [7, 'seven'], [100, 'hundred']])
+	smallTree = remove(api, smallTree, 2)
+	eq(Array.from(smallTree.iterator(api)), [[6, 'six'], [7, 'seven'], [100, 'hundred']])
 
-	smallTree = remove(smallTree, 100)
-	eq(Array.from(smallTree), [[6, 'six'], [7, 'seven']])
+	smallTree = remove(api, smallTree, 100)
+	eq(Array.from(smallTree.iterator(api)), [[6, 'six'], [7, 'seven']])
 
-	smallTree = remove(smallTree, 6)
-	eq(Array.from(smallTree), [[7, 'seven']])
+	smallTree = remove(api, smallTree, 6)
+	eq(Array.from(smallTree.iterator(api)), [[7, 'seven']])
 
-	smallTree = remove(smallTree, 7)
-	eq(Array.from(smallTree), [])
+	smallTree = remove(api, smallTree, 7)
+	eq(Array.from(smallTree.iterator(api)), [])
 
-	smallTree = remove(smallTree, 99)
-	eq(Array.from(smallTree), [])
+	smallTree = remove(api, smallTree, 99)
+	eq(Array.from(smallTree.iterator(api)), [])
 
-	smallTree = insertSomeData(smallTree)
+	smallTree = insertSomeData(api, smallTree)
 
-	smallTree = remove(smallTree, 7)
-	smallTree = remove(smallTree, 88)
-	smallTree = remove(smallTree, 11)
+	smallTree = remove(api, smallTree, 7)
+	smallTree = remove(api, smallTree, 88)
+	smallTree = remove(api, smallTree, 11)
 
-	is(find(smallTree, 0), undefined)
-	is(find(smallTree, 1), 'one')
-	is(find(smallTree, 2), 'two')
-	is(find(smallTree, 7), undefined)
-	is(find(smallTree, 8), 'eight')
-	is(find(smallTree, 11), undefined)
-	is(find(smallTree, 88), undefined)
+	is(find(api, smallTree, 0), undefined)
+	is(find(api, smallTree, 1), 'one')
+	is(find(api, smallTree, 2), 'two')
+	is(find(api, smallTree, 7), undefined)
+	is(find(api, smallTree, 8), 'eight')
+	is(find(api, smallTree, 11), undefined)
+	is(find(api, smallTree, 88), undefined)
 })

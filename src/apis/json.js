@@ -28,9 +28,9 @@ const api = {
 		const {minChildren, maxChildren, keys, children, terminalNode, nextBucket, prevBucket} = JSON.parse(cache[id])
 		let result
 		if (terminalNode) {
-			result = new Bucket(this, minChildren, maxChildren, numCompare, keys, children, nextBucket, prevBucket)
+			result = new Bucket(minChildren, maxChildren, numCompare, keys, children, nextBucket, prevBucket)
 		} else {
-			result = new InternalNode(this, minChildren, maxChildren, numCompare, keys, children)
+			result = new InternalNode(minChildren, maxChildren, numCompare, keys, children)
 		}
 		result.ref = id
 		return result
