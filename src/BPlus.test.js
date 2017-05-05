@@ -2,7 +2,7 @@ const {test} = require('ava')
 const BPlus = require('./BPlus')
 const {binder} = require('./utils/testutils')
 
-test.only("Basic operations on the bplus tree",(t) => {
+test("Basic operations on the bplus tree",(t) => {
 	const {deepEqual:eq} = binder(t)
 
 	const tree = new BPlus()
