@@ -89,7 +89,6 @@ test("Deletion", (t) => {
 
 	let smallTree = n([3, 9], [b1, b2, b3])
 
-	console.log(smallTree)
 	smallTree = remove(api, smallTree, 9)
 	eq(Array.from(smallTree.iterator(api)), [[2, 'two'], [3, 'three'], [6, 'six'], [7, 'seven'], [100, 'hundred']])
 

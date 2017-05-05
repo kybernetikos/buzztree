@@ -1,5 +1,5 @@
 const binarySearch = require('../utils/binarySearch')
-const Node = require('./node')
+const Node = require('./Node')
 const {findChildIndex} = require('../utils/findChildIndex')
 
 class InternalNode extends Node {

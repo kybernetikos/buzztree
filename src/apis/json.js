@@ -1,5 +1,5 @@
-const InternalNode = require('../data/internalNode')
-const Bucket = require('../data/bucket')
+const InternalNode = require('../data/InternalNode')
+const Bucket = require('../data/Bucket')
 
 function numCompare(a, b) {
 	return a - b

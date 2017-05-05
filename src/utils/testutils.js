@@ -1,6 +1,6 @@
 const api = require('../apis/json')
-const Bucket = require('../data/bucket')
-const Node = require('../data/internalNode')
+const Bucket = require('../data/Bucket')
+const Node = require('../data/InternalNode')
 const {insert} = require('../operations/insert')
 
 function numCompare(a, b) {

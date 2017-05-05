@@ -1,5 +1,5 @@
 const binarySearch = require('../utils/binarySearch')
-const Node = require('./node')
+const Node = require('./Node')
 
 class Bucket extends Node {
 	constructor(minChildren, maxChildren, keyCompareFn, keys = [], children = [], nextBucket, prevBucket) {

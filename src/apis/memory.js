@@ -1,29 +1,30 @@
-const cache = {}
+const cache = new WeakMap()
 let current = 0
 const api = {
 	create(node) {
-		const result = current++
-		cache[result] = node
+		const x = current++
+		const result = {toString() {return "#"+x}}
+		cache.set(result, node)
 		console.log('create id ', result,  String(node))
 		return result
 	},
 	update(id, node) {
-		cache[id] = node
+		cache.set(id, node)
 		console.log('update id ', id,  String(node))
 	},
 	read(id) {
-		console.log('read id ', id,  String(cache[id]))
-		if (!cache[id]) {
+		console.log('read id ', id,  String(cache.get(id)))
+		if (!cache.has(id)) {
 			throw new Error("could not find id="+id)
 		}
-		return cache[id]
+		return cache.get(id)
 	},
 	remove(id) {
-		if (id in cache === false) {
+		if (!cache.has(id)) {
 			throw new Error('id not in cache' + id)
 		}
-		console.log('remove id ', id,  String(cache[id]))
-		delete cache[id]
+		console.log('remove id ', id,  String(cache.get(id)))
+		cache.delete(id)
 	}
 }
 

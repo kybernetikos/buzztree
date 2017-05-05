@@ -1,5 +1,5 @@
 const {find} = require('./find')
-const Bucket = require('../data/bucket')
+const Bucket = require('../data/Bucket')
 const {test} = require('ava')
 const {insertSomeData, numCompare, binder, api} = require('../utils/testutils')
 

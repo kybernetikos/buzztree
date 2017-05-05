@@ -1,5 +1,5 @@
 const findIndex = require('./binarySearch')
-const Node = require('../data/node')
+const Node = require('../data/Node')
 
 function findChildIndex(node, key) {
 	if (node instanceof Node === false) {

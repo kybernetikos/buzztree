@@ -1,5 +1,5 @@
 const findIndex = require('../utils/binarySearch')
-const Node = require('../data/node')
+const Node = require('../data/Node')
 const {findChildIndex} = require('../utils/findChildIndex')
 
 /**

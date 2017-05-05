@@ -3,6 +3,7 @@ class Node {
 		Object.assign(this, {ref: undefined, minChildren, maxChildren, keyCompareFn, keys, children})
 	}
 
+	//noinspection JSUnusedGlobalSymbols
 	*iterator(api) {
 		yield* this.rangeIterator(api)
 	}

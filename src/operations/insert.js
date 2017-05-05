@@ -1,7 +1,7 @@
 const findIndex = require('../utils/binarySearch')
-const Bucket = require('../data/bucket')
-const InternalNode = require('../data/internalNode')
-const Node = require('../data/node')
+const Bucket = require('../data/Bucket')
+const InternalNode = require('../data/InternalNode')
+const Node = require('../data/Node')
 const {findChildIndex} = require('../utils/findChildIndex')
 
 function isOverful(node) {
