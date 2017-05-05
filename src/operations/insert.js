@@ -54,8 +54,10 @@ function insert(api, node, key, value) {
 function insertIntoBucket(api, bucket, key, value) {
 	const index = findIndex(bucket.keyCompareFn, key, bucket.keys)
 	if (index >= 0) {
-		bucket.children[index] = value
-		bucket.store()
+		if (bucket.children[index] !== value) {
+			bucket.children[index] = value
+			bucket.store(api)
+		}
 		return bucket
 	}
 	bucket.keys.splice(-index-1, 0, key)
