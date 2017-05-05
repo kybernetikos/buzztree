@@ -1,20 +1,9 @@
 class Node {
 	constructor(keys, children) {
-		Object.assign(this, {ref: undefined, keys, children})
-	}
-
-	//noinspection JSUnusedGlobalSymbols
-	*iterator(config) {
-		yield* this.rangeIterator(config)
-	}
-
-	store({api}) {
-		if (this.ref === undefined) {
-			this.ref = api.create(this)
-		} else {
-			api.update(this.ref, this)
+		if (!Array.isArray(keys) || !Array.isArray(children)) {
+			throw new Error(`Keys and children must be arrays, keys was ${keys} and values was ${children}.`)
 		}
-		return this.ref
+		Object.assign(this, {ref: undefined, keys, children})
 	}
 }
 

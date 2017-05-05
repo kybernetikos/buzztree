@@ -2,6 +2,7 @@ const api = require('../apis/json')
 const Bucket = require('../data/Bucket')
 const Node = require('../data/InternalNode')
 const {insert} = require('../operations/insert')
+const {store} = require('../operations/store')
 const TreeConfig = require('../data/TreeConfig')
 
 const config = new TreeConfig(api, numCompare, 4)
@@ -11,12 +12,12 @@ function numCompare(a, b) {
 }
 function n(keys = [], children = []) {
 	const result = new Node(keys, children.map((x) => x.ref))
-	result.store(config)
+	store(config, result)
 	return result
 }
 function b(kvs, next) {
 	const result = new Bucket(kvs.map((x) => x.key), kvs.map((x) => x.value), next ? next.ref : undefined)
-	result.store(config)
+	store(config, result)
 	return result
 }
 function kv(key, value = key) {

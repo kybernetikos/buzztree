@@ -1,6 +1,6 @@
-const findIndex = require('../utils/binarySearch')
-const Node = require('../data/Node')
+const {findIndex} = require('../utils/binarySearch')
 const {findChildIndex} = require('../utils/findChildIndex')
+const {store} = require('../operations/store')
 
 /**
  * Modifies a bucket by removing a key/value from it.
@@ -12,7 +12,7 @@ function removeFromBucket(config, bucket, key) {
 		bucket.keys.splice(index, 1)
 		bucket.children.splice(index, 1)
 	}
-	bucket.store(config)
+	store(config, bucket)
 	return bucket
 }
 
@@ -86,9 +86,9 @@ function removeFromNode(config, node, key) {
 			node.children.splice(index + 1, 1)
 			node.keys.splice(index, 1)
 		} else {
-			throw new Error('i dont think this should happen')
+			throw new Error('Assertion Error: unable to choose an action MERGE/BALANCE.')
 		}
-		node.store(config)
+		store(config, node)
 	}
 
 	// I'm worried that this might be wrong.  Under what circumstances should
@@ -101,9 +101,6 @@ function removeFromNode(config, node, key) {
 }
 
 function remove(config, node, key) {
-	if (node instanceof Node === false) {
-		throw new Error(`Node to remove from must be a node, was ${node}`)
-	}
 	if (node.terminalNode) {
 		return removeFromBucket(config, node, key)
 	} else {
@@ -125,12 +122,12 @@ function merge(config, node, splitPoint, sibling) {
 		if (nextRef !== undefined) {
 			const newNext = config.api.read(nextRef)
 			newNext.prevBucket = node.ref
-			newNext.store(config)
+			store(config, newNext)
 		}
 	} else {
 		node.keys = node.keys.concat(splitPoint, sibling.keys)
 	}
-	node.store(config)
+	store(config, node)
 	config.api.remove(sibling.ref)
 }
 
@@ -144,16 +141,30 @@ function balance(config, node, splitPoint, sibling) {
 	let allKeys
 	if (node.terminalNode) {
 		allKeys = node.keys.slice().concat(sibling.keys)
-		node.resetData(allKeys.slice(0, middle), allChildren.slice(0, middle), sibling.ref)
-		sibling.resetData(allKeys.slice(middle), allChildren.slice(middle), sibling.nextBucket)
+		Object.assign(node, {
+			keys: allKeys.slice(0, middle),
+			children: allChildren.slice(0, middle),
+			nextBucket: sibling.ref
+		})
+		Object.assign(sibling, {
+			keys: allKeys.slice(middle),
+			children: allChildren.slice(middle),
+			nextBucket: sibling.nextBucket
+		})
 	} else {
 		allKeys = node.keys.slice().concat(splitPoint, sibling.keys)
 		middle = Math.floor(allKeys.length / 2)
-		node.resetData(allKeys.slice(0, middle), allChildren.slice(0, middle + 1))
-		sibling.resetData(allKeys.slice(middle + 1), allChildren.slice(middle + 1))
+		Object.assign(node, {
+			keys: allKeys.slice(0, middle),
+			children: allChildren.slice(0, middle + 1)
+		})
+		Object.assign(sibling, {
+			keys: allKeys.slice(middle + 1),
+			children: allChildren.slice(middle + 1)
+		})
 	}
-	node.store(config)
-	sibling.store(config)
+	store(config, node)
+	store(config, sibling)
 	return {left: node, pivot: allKeys[middle], right: sibling}
 }
 

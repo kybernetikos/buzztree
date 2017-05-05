@@ -2,6 +2,7 @@ const {find} = require('./find')
 const Bucket = require('../data/Bucket')
 const {test} = require('ava')
 const {insertSomeData, binder, config} = require('../utils/testutils')
+const {iterate, reverseIterate} = require('./iterate')
 
 test('insertions', (t) => {
 	const {is, deepEqual:eq} = binder(t)
@@ -17,9 +18,10 @@ test('insertions', (t) => {
 	is(find(config, tree, 90), 'ninety')
 	is(find(config, tree, 101), undefined)
 
-	const mapRange = Array.from(tree.rangeIterator(config, 55, 86))
+	const mapRange = Array.from(iterate(config, tree, 55, 86))
 	eq(mapRange, [[55, 'fifty-five'], [56, 'fifty-six'], [57, 'fifty-seven'], [80, 'eighty'], [85, 'eighty-five'], [86, 'eighty-six']])
-	eq(Array.from(tree.rangeIterator(config, 0, 3)), [[1, 'one'], [2, 'two'], [3, 'three']])
-	eq(Array.from(tree.rangeIterator(config, 90, 300)), [[90, 'ninety']])
-	eq(Array.from(tree.rangeIterator(config, 300, 1000)), [])
+	eq(Array.from(iterate(config, tree, 0, 3)), [[1, 'one'], [2, 'two'], [3, 'three']])
+	eq(Array.from(reverseIterate(config, tree, 3, 0)), [[3, 'three'], [2, 'two'], [1, 'one']])
+	eq(Array.from(iterate(config, tree, 90, 300)), [[90, 'ninety']])
+	eq(Array.from(iterate(config, tree, 300, 1000)), [])
 })

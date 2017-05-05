@@ -53,4 +53,4 @@ function binarySearch(comparisonFn, item, array, start, end) {
 	}
 }
 
-module.exports = findIndex
+module.exports = { findIndex }

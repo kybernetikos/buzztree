@@ -1,4 +1,4 @@
-const findIndex = require('./binarySearch')
+const {findIndex} = require('./binarySearch')
 const Node = require('../data/Node')
 
 function findChildIndex(config, node, key) {

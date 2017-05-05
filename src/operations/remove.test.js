@@ -2,6 +2,7 @@ const {balance, remove} = require('./remove')
 const {find} = require('./find')
 const {test} = require('ava')
 const {n, b, kv, insertSomeData, binder, config} = require('../utils/testutils')
+const {iterate} = require('./iterate')
 
 test("Balancing between nodes works",(t) => {
 	const {deepEqual:eq} = binder(t)
@@ -23,7 +24,7 @@ test("Balancing between nodes works",(t) => {
 
 	balance(config, leftSib, 15, rightSib)
 
-	eq(Array.from(smallTree.iterator(config)), [[1, 'one'], [5, 'five'], [10, 'ten'], [12, 'twelve'], [15, 'fifteen'], [20, 'twenty']])
+	eq(Array.from(iterate(config, smallTree)), [[1, 'one'], [5, 'five'], [10, 'ten'], [12, 'twelve'], [15, 'fifteen'], [20, 'twenty']])
 	eq(leftSib.children.length, 3)
 	eq(rightSib.children.length, 3)
 })
@@ -45,7 +46,7 @@ test("Balancing between buckets works",(t) => {
 	eq(pivot, 6)
 	eq(right.children, ['six', 'seven'])
 	eq(right.keys, [6, 7])
-	eq(Array.from(smallTree.iterator(config)), smallTreeEntries)
+	eq(Array.from(iterate(config, smallTree)), smallTreeEntries)
 })
 
 test("balance two buckets of same size keeps them the same", (t) => {
@@ -90,25 +91,25 @@ test("Deletion", (t) => {
 	let smallTree = n([3, 9], [b1, b2, b3])
 
 	smallTree = remove(config, smallTree, 9)
-	eq(Array.from(smallTree.iterator(config)), [[2, 'two'], [3, 'three'], [6, 'six'], [7, 'seven'], [100, 'hundred']])
+	eq(Array.from(iterate(config, smallTree)), [[2, 'two'], [3, 'three'], [6, 'six'], [7, 'seven'], [100, 'hundred']])
 
 	smallTree = remove(config, smallTree, 3)
-	eq(Array.from(smallTree.iterator(config)), [[2, 'two'], [6, 'six'], [7, 'seven'], [100, 'hundred']])
+	eq(Array.from(iterate(config, smallTree)), [[2, 'two'], [6, 'six'], [7, 'seven'], [100, 'hundred']])
 
 	smallTree = remove(config, smallTree, 2)
-	eq(Array.from(smallTree.iterator(config)), [[6, 'six'], [7, 'seven'], [100, 'hundred']])
+	eq(Array.from(iterate(config, smallTree)), [[6, 'six'], [7, 'seven'], [100, 'hundred']])
 
 	smallTree = remove(config, smallTree, 100)
-	eq(Array.from(smallTree.iterator(config)), [[6, 'six'], [7, 'seven']])
+	eq(Array.from(iterate(config, smallTree)), [[6, 'six'], [7, 'seven']])
 
 	smallTree = remove(config, smallTree, 6)
-	eq(Array.from(smallTree.iterator(config)), [[7, 'seven']])
+	eq(Array.from(iterate(config, smallTree)), [[7, 'seven']])
 
 	smallTree = remove(config, smallTree, 7)
-	eq(Array.from(smallTree.iterator(config)), [])
+	eq(Array.from(iterate(config, smallTree)), [])
 
 	smallTree = remove(config, smallTree, 99)
-	eq(Array.from(smallTree.iterator(config)), [])
+	eq(Array.from(iterate(config, smallTree)), [])
 
 	smallTree = insertSomeData(config, smallTree)
 

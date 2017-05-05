@@ -1,5 +1,5 @@
 const {test} = require('ava')
-const findIndex = require('./binarySearch')
+const {findIndex} = require('./binarySearch')
 const {binder} = require('./testutils')
 
 function numCompare(a, b) {

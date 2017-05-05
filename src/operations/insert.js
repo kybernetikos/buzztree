@@ -1,17 +1,14 @@
-const findIndex = require('../utils/binarySearch')
+const {findIndex} = require('../utils/binarySearch')
 const Bucket = require('../data/Bucket')
 const InternalNode = require('../data/InternalNode')
-const Node = require('../data/Node')
 const {findChildIndex} = require('../utils/findChildIndex')
+const {store} = require('../operations/store')
 
 function maxChildren(config, node) {
 	return node.terminalNode ? config.bucket.maxChildren : config.node.maxChildren
 }
 
 function isOverful(config, node) {
-	if (node instanceof Node === false) {
-		throw new Error("node is of wrong type " + node)
-	}
 	return node.children.length > maxChildren(config, node)
 }
 
@@ -34,21 +31,21 @@ function splitIfNecessary(config, node) {
 	if (node.terminalNode) {
 		const newChildren = node.children.splice(pivotIndex)
 		newRightNode = new Bucket(newKeys, newChildren, node.nextBucket, node.ref)
-		newRightNode.store(config)
+		store(config, newRightNode)
 		node.nextBucket = newRightNode.ref
 
 		if (newRightNode.nextBucket !== undefined) {
 			const nextBucket = api.read(newRightNode.nextBucket)
 			nextBucket.prevBucket = newRightNode.ref
-			nextBucket.store(config)
+			store(config, nextBucket)
 		}
 	} else {
 		newKeys.shift()
 		const newChildren = node.children.splice(pivotIndex + 1)
 		newRightNode = new InternalNode(newKeys, newChildren)
-		newRightNode.store(config)
+		store(config, newRightNode)
 	}
-	node.store(config)
+	store(config, node)
 	return new InternalNode([pivot], [node.ref, newRightNode.ref])
 }
 
@@ -61,14 +58,14 @@ function insertIntoBucket(config, bucket, key, value) {
 	if (index >= 0) {
 		if (bucket.children[index] !== value) {
 			bucket.children[index] = value
-			bucket.store(config)
+			store(config, bucket)
 		}
 		return bucket
 	}
 	bucket.keys.splice(-index-1, 0, key)
 	bucket.children.splice(-index-1, 0, value)
 	const result = splitIfNecessary(config, bucket)
-	result.store(config)
+	store(config, result)
 	return result
 }
 
@@ -88,7 +85,7 @@ function mergeInsertionRemainder(config, node, insertionRemainder) {
 	node.children[-index-1] = left
 	node.children.splice(-index, 0, right)
 	const result = splitIfNecessary(config, node)
-	result.store(config)
+	store(config, result)
 	return result
 }
 
