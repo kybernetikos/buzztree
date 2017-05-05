@@ -1,1 +1,4 @@
-next pointer of previous is wrong when a node has been removed
+BuzzTree
+========
+
+A B+Tree
