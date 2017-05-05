@@ -6,14 +6,14 @@ let current = 0
 const api = {
 	create(node) {
 		const result = current++
-		const {keys, children, terminalNode, nextBucket, prevBucket} = node
-		cache[result] = JSON.stringify({keys, children, terminalNode, nextBucket, prevBucket})
+		const {rootRef, keys, children, terminalNode, nextBucket, prevBucket} = node
+		cache[result] = JSON.stringify({rootRef, keys, children, terminalNode, nextBucket, prevBucket})
 		console.log('create', result,  cache[result])
 		return result
 	},
 	update(id, node) {
-		const {keys, children, terminalNode, nextBucket, prevBucket} = node
-		cache[id] = JSON.stringify({keys, children, terminalNode, nextBucket, prevBucket})
+		const {rootRef, keys, children, terminalNode, nextBucket, prevBucket} = node
+		cache[id] = JSON.stringify({rootRef, keys, children, terminalNode, nextBucket, prevBucket})
 		console.log('update id ', id,  cache[id])
 	},
 	read(id) {
@@ -21,9 +21,11 @@ const api = {
 		if (!cache[id]) {
 			throw new Error("could not find id="+id)
 		}
-		const {keys, children, terminalNode, nextBucket, prevBucket} = JSON.parse(cache[id])
+		const {rootRef, keys, children, terminalNode, nextBucket, prevBucket} = JSON.parse(cache[id])
 		let result
-		if (terminalNode) {
+		if (rootRef) {
+			result = {root: this.read(rootRef)}
+		} else if (terminalNode) {
 			result = new Bucket(keys, children, nextBucket, prevBucket)
 		} else {
 			result = new InternalNode(keys, children)

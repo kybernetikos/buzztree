@@ -2,7 +2,7 @@ const binarySearch = require('../utils/binarySearch')
 const Node = require('./Node')
 
 class Bucket extends Node {
-	constructor(keys = [], children = [], nextBucket, prevBucket) {
+	constructor(keys = [], children = [], nextBucket = undefined, prevBucket = undefined) {
 		if (keys.length !== children.length) {
 			throw new Error(`There must be the same number of values as keys, there were ${keys.length} keys and ${children.length} values.`)
 		}

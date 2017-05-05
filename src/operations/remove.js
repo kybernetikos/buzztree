@@ -88,7 +88,6 @@ function removeFromNode(config, node, key) {
 		} else {
 			throw new Error('Assertion Error: unable to choose an action MERGE/BALANCE.')
 		}
-		store(config, node)
 	}
 
 	// I'm worried that this might be wrong.  Under what circumstances should
@@ -97,6 +96,7 @@ function removeFromNode(config, node, key) {
 		config.api.remove(node.ref)
 		return config.api.read(node.children[0])
 	}
+	store(config, node)
 	return node
 }
 
