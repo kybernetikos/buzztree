@@ -8,7 +8,6 @@ function naturalCompare(a, b) {
 }
 
 class BPlus {
-	// this {ref, rootRef, root, config}
 	constructor(ref = undefined, api = apis.json, keyCompareFn = naturalCompare, maxNodeChildren = 3) {
 		this.config = new TreeConfig(api, keyCompareFn, maxNodeChildren)
 		this.ref = ref
@@ -39,8 +38,12 @@ class BPlus {
 		updateRoot(this, result)
 	}
 
-	*entries(minKey, maxKey) {
-		yield* ops.iterate(this.config, this.root, minKey, maxKey)
+	*entries(startKey, endKey) {
+		if (this.config.keyCompareFn(startKey, endKey) <= 0) {
+			yield* ops.iterate(this.config, this.root, startKey, endKey)
+		} else {
+			yield* ops.reverseIterate(this.config, this.root, startKey, endKey)
+		}
 	}
 
 	*[Symbol.iterator]() {

@@ -33,7 +33,7 @@ function* reverseIterate(config, node, startKey, endKey) {
 	} else {
 		let fromIdx = startKey !== undefined ? findIndex(config.keyCompareFn, startKey, node.keys) : node.children.length - 1
 		if (fromIdx < 0) {
-			fromIdx = -fromIdx-1
+			fromIdx = -fromIdx-2
 		}
 		let done = false
 		for (let i = fromIdx; i >= 0; --i) {

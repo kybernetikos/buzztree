@@ -13,8 +13,7 @@ test.only("Basic operations on the bplus tree",(t) => {
 	tree.set("jim", "captain")
 	tree.set("crystals", "take it")
 
-	eq(Array.from(tree.entries()), [
-		["crystals", "take it"],
+	eq(Array.from(tree.entries("dave", "xylophone")), [
 		["good", "hurrah"],
 		["hello", "there"],
 		["jim", "captain"],
@@ -28,6 +27,17 @@ test.only("Basic operations on the bplus tree",(t) => {
 		["hello", "there"],
 		["jim", "captain"],
 		["tasty", "bob"]
+	])
+	eq(Array.from(storedTree.entries("dave", "xylophone")), [
+		["good", "hurrah"],
+		["hello", "there"],
+		["jim", "captain"],
+		["tasty", "bob"]
+	])
+	eq(Array.from(storedTree.entries("kitchen", "fun")), [
+		["jim", "captain"],
+		["hello", "there"],
+		["good", "hurrah"]
 	])
 
 	eq(storedTree.get("hello"), "there")
