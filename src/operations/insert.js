@@ -11,6 +11,8 @@ function isOverful(node) {
  * Returns the passed node unchanged if it is not overful.  If the node is overful
  * it splits it in two (mutating it in the process), and then puts the left subtree
  * (made from the old node) and brand new right subtree in a new internal node and returns that.
+ *
+ * In the case that a split occurs, the returned node *has not be saved*, but its children have.
  */
 function splitIfNecessary(node) {
 	if (!isOverful(node)) {
@@ -22,9 +24,15 @@ function splitIfNecessary(node) {
 	let newRightNode
 	if (node.terminalNode) {
 		const newChildren = node.children.splice(pivotIndex)
-		newRightNode = new Bucket(node.api, node.minChildren, node.maxChildren, node.keyCompareFn, newKeys, newChildren, node.nextBucket)
+		newRightNode = new Bucket(node.api, node.minChildren, node.maxChildren, node.keyCompareFn, newKeys, newChildren, node.nextBucket, node.ref)
 		newRightNode.store()
 		node.nextBucket = newRightNode.ref
+
+		if (newRightNode.nextBucket !== undefined) {
+			const nextBucket = node.api.read(newRightNode.nextBucket)
+			nextBucket.prevBucket = newRightNode.ref
+			nextBucket.store()
+		}
 	} else {
 		newKeys.shift()
 		const newChildren = node.children.splice(pivotIndex + 1)
@@ -32,8 +40,7 @@ function splitIfNecessary(node) {
 		newRightNode.store()
 	}
 	node.store()
-	const result = new InternalNode(node.api, node.minChildren, node.maxChildren, node.keyCompareFn, [pivot], [node.ref, newRightNode.ref])
-	return result
+	return new InternalNode(node.api, node.minChildren, node.maxChildren, node.keyCompareFn, [pivot], [node.ref, newRightNode.ref])
 }
 
 function insert(node, key, value) {
@@ -73,7 +80,5 @@ function mergeInsertionRemainder(node, insertionRemainder) {
 	result.store()
 	return result
 }
-
-const isTest = Boolean(process.env.AVA_PATH)
 
 module.exports = {insert}

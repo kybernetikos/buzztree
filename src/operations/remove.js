@@ -74,12 +74,12 @@ function removeFromNode(node, key) {
 		const richSibling = selectChildAndSiblingForMerging(node, childIndex)
 		if (richSibling.action === BALANCE) {
 			const {index, left:leftSib, pivot:pivotBefore, right:rightSib} = richSibling
-			const {left, pivot, right} = balance(leftSib, pivotBefore, rightSib)
+			const {pivot} = balance(leftSib, pivotBefore, rightSib)
 			node.keys[index] = pivot
 		} else if (richSibling.action === MERGE) {
 			const {index, left:leftSib, pivot:pivotBefore, right:rightSib} = richSibling
 			merge(leftSib, pivotBefore, rightSib)
-			node.api.remove(node.children.splice(index + 1, 1)[0])
+			node.children.splice(index + 1, 1)
 			node.keys.splice(index, 1)
 		} else {
 			throw new Error('i dont think this should happen')
@@ -116,9 +116,18 @@ function merge(node, splitPoint, sibling) {
 	if (node.terminalNode) {
 		node.keys = node.keys.concat(sibling.keys)
 		node.nextBucket = sibling.nextBucket
+
+		const nextRef = sibling.nextBucket
+		if (nextRef !== undefined) {
+			const newNext = node.api.read(nextRef)
+			newNext.prevBucket = node.ref
+			newNext.store()
+		}
 	} else {
 		node.keys = node.keys.concat(splitPoint, sibling.keys)
 	}
+	node.store()
+	node.api.remove(sibling.ref)
 }
 
 /**
@@ -127,7 +136,7 @@ function merge(node, splitPoint, sibling) {
  */
 function balance(node, splitPoint, sibling) {
 	const allChildren = node.children.slice().concat(sibling.children)
-	const middle = Math.floor(allChildren.length / 2)
+	let middle = Math.floor(allChildren.length / 2)
 	let allKeys
 	if (node.terminalNode) {
 		allKeys = node.keys.slice().concat(sibling.keys)
@@ -135,9 +144,12 @@ function balance(node, splitPoint, sibling) {
 		sibling.resetData(allKeys.slice(middle), allChildren.slice(middle), sibling.nextBucket)
 	} else {
 		allKeys = node.keys.slice().concat(splitPoint, sibling.keys)
-		node.resetData(allKeys.slice(0, middle), allChildren.slice(0, middle))
-		sibling.resetData(allKeys.slice(middle + 1), allChildren.slice(middle))
+		middle = Math.floor(allKeys.length / 2)
+		node.resetData(allKeys.slice(0, middle), allChildren.slice(0, middle + 1))
+		sibling.resetData(allKeys.slice(middle + 1), allChildren.slice(middle + 1))
 	}
+	node.store()
+	sibling.store()
 	return {left: node, pivot: allKeys[middle], right: sibling}
 }
 

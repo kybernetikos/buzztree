@@ -2,7 +2,7 @@ const binarySearch = require('../utils/binarySearch')
 const Node = require('./node')
 
 class Bucket extends Node {
-	constructor(api, minChildren, maxChildren, keyCompareFn, keys = [], children = [], nextBucket) {
+	constructor(api, minChildren, maxChildren, keyCompareFn, keys = [], children = [], nextBucket, prevBucket) {
 		if (!Array.isArray(keys) || !Array.isArray(children)) {
 			throw new Error(`Keys and children must be arrays, keys was ${keys} and values was ${children}.`)
 		}
@@ -13,11 +13,11 @@ class Bucket extends Node {
 			throw new Error(`Key compare fn must be a function, was a ${typeof keyCompareFn}.`)
 		}
 		super(api, minChildren, maxChildren, keyCompareFn, keys, children)
-		Object.assign(this, {nextBucket, terminalNode: true})
+		Object.assign(this, {nextBucket, prevBucket, terminalNode: true})
 	}
 
-	resetData(keys = [], children = [], nextBucket = this.nextBucket) {
-		Object.assign(this, {keys, children, nextBucket})
+	resetData(keys = [], children = [], nextBucket = this.nextBucket, prevBucket = this.prevBucket) {
+		Object.assign(this, {keys, children, nextBucket, prevBucket})
 	}
 
 	*rangeIterator(minKey, maxKey) {

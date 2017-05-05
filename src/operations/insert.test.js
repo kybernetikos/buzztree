@@ -1,5 +1,5 @@
 const {find} = require('./find')
-const api = require('../apis/memory')
+const api = require('../apis/json')
 const Bucket = require('../data/bucket')
 const {test} = require('ava')
 const {insertSomeData, numCompare, binder} = require('../utils/testutils')

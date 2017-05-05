@@ -4,7 +4,7 @@ const {test} = require('ava')
 const {n, b, kv, insertSomeData, binder} = require('../utils/testutils')
 
 test("Balancing between nodes works",(t) => {
-	const {is, deepEqual:eq} = binder(t)
+	const {deepEqual:eq} = binder(t)
 
 	const b1 = b([kv(20, 'twenty')])
 	const b2 = b([kv(15, 'fifteen')], b1)
@@ -21,7 +21,7 @@ test("Balancing between nodes works",(t) => {
 		[ leftSib , rightSib ]
 	)
 
-	const {left, pivot, right} = balance(leftSib, 15, rightSib)
+	balance(leftSib, 15, rightSib)
 
 	eq(Array.from(smallTree), [[1, 'one'], [5, 'five'], [10, 'ten'], [12, 'twelve'], [15, 'fifteen'], [20, 'twenty']])
 	eq(leftSib.children.length, 3)
@@ -29,7 +29,7 @@ test("Balancing between nodes works",(t) => {
 })
 
 test("Balancing between buckets works",(t) => {
-	const {is, deepEqual:eq} = binder(t)
+	const {deepEqual:eq} = binder(t)
 	const b3 = b([kv(9, 'nine'), kv(100, 'hundred')])
 	const b2 = b([kv(3, 'three'), kv(6, 'six'), kv(7, 'seven')], b3)
 	const b1 = b([kv(2, 'two')], b2)
@@ -49,7 +49,7 @@ test("Balancing between buckets works",(t) => {
 })
 
 test("balance two buckets of same size keeps them the same", (t) => {
-	const {is, deepEqual:eq} = binder(t)
+	const {deepEqual:eq} = binder(t)
 	const {left, pivot, right} = balance(b([kv(1, 'one')]), 2, b([kv(2, 'two')]))
 
 	eq(left.keys, [1])
@@ -60,7 +60,7 @@ test("balance two buckets of same size keeps them the same", (t) => {
 })
 
 test("balance an empty bucket with a bucket of size 2 divides the values evenly", (t) => {
-	const {is, deepEqual:eq} = binder(t)
+	const {deepEqual:eq} = binder(t)
 	const {left, pivot, right} = balance(b([]), 0, b([kv(1, 'one'), kv(2, 'two')]))
 
 	eq(left.keys, [1])
@@ -71,7 +71,7 @@ test("balance an empty bucket with a bucket of size 2 divides the values evenly"
 })
 
 test("balance a bucket of size 2 with an empty bucket divides the values evenly", (t) => {
-	const {is, deepEqual:eq} = binder(t)
+	const {deepEqual:eq} = binder(t)
 	const {left, pivot, right} = balance(b([kv(1, 'one'), kv(2, 'two')]), 4, b([]))
 
 	eq(left.keys, [1])
@@ -96,15 +96,12 @@ test("Deletion", (t) => {
 	eq(Array.from(smallTree), [[2, 'two'], [6, 'six'], [7, 'seven'], [100, 'hundred']])
 
 	smallTree = remove(smallTree, 2)
-	console.log(String(smallTree))
 	eq(Array.from(smallTree), [[6, 'six'], [7, 'seven'], [100, 'hundred']])
 
 	smallTree = remove(smallTree, 100)
 	eq(Array.from(smallTree), [[6, 'six'], [7, 'seven']])
 
-	console.log('before', smallTree)
 	smallTree = remove(smallTree, 6)
-	console.log('root', smallTree, Array.from(smallTree))
 	eq(Array.from(smallTree), [[7, 'seven']])
 
 	smallTree = remove(smallTree, 7)

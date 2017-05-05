@@ -1,4 +1,4 @@
-const api = require('../apis/memory')
+const api = require('../apis/json')
 const Bucket = require('../data/bucket')
 const Node = require('../data/internalNode')
 const {insert} = require('../operations/insert')
@@ -47,23 +47,8 @@ function insertSomeData(tree) {
 }
 
 function binder(thing) {
-	const boundFns = {}
-
 	return new Proxy(thing, {
-		get: function(target, property, receiver) {
-			const result = target[property]
-
-			if (!boundFns[property] && typeof result === 'function') {
-				boundFns[property] = result.bind(thing)
-			}
-			return boundFns[property] || thing[property]
-		}
-	})
-}
-
-function binder(thing) {
-	return new Proxy(thing, {
-		get: function(target, property, receiver) {
+		get(target, property) {
 			const result = target[property]
 			return (typeof result === 'function') ? result.bind(thing) : result
 		}
