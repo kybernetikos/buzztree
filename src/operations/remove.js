@@ -6,30 +6,34 @@ const {findChildIndex} = require('../utils/findChildIndex')
  * Modifies a bucket by removing a key/value from it.
  * Returns the passed bucket.
  */
-function removeFromBucket(api, bucket, key) {
-	const index = findIndex(bucket.keyCompareFn, key, bucket.keys)
+function removeFromBucket(config, bucket, key) {
+	const index = findIndex(config.keyCompareFn, key, bucket.keys)
 	if (index >= 0) {
 		bucket.keys.splice(index, 1)
 		bucket.children.splice(index, 1)
 	}
-	bucket.store(api)
+	bucket.store(config)
 	return bucket
 }
 
 const BALANCE = {}, MERGE = {}
+
+function minChildren(config, node) {
+	return node.terminalNode ? config.bucket.minChildren : config.node.minChildren
+}
 
 /**
  * Chooses a sibling, to balance across if possible, or to merge if balancing is not
  * possible.
  * Does not mutate anything.
  */
-function selectChildAndSiblingForMerging(api, node, childIndex) {
+function selectChildAndSiblingForMerging(config, node, childIndex) {
 	let result = {}
 	if (childIndex > 0) {
-		const leftSib = api.read(node.children[childIndex - 1])
-		const rightSib = api.read(node.children[childIndex])
+		const leftSib = config.api.read(node.children[childIndex - 1])
+		const rightSib = config.api.read(node.children[childIndex])
 		const totalChildren = rightSib.children.length + leftSib.children.length
-		const minAcrossBoth = rightSib.minChildren + leftSib.minChildren
+		const minAcrossBoth = minChildren(config, rightSib) + minChildren(config, leftSib)
 		result = {
 			action: totalChildren >= minAcrossBoth ? BALANCE : MERGE,
 			index: childIndex - 1,
@@ -39,10 +43,10 @@ function selectChildAndSiblingForMerging(api, node, childIndex) {
 		}
 	}
 	if (!(result && result.action === BALANCE) && childIndex < (node.children.length - 1)) {
-		const leftSib = api.read(node.children[childIndex])
-		const rightSib = api.read(node.children[childIndex + 1])
+		const leftSib = config.api.read(node.children[childIndex])
+		const rightSib = config.api.read(node.children[childIndex + 1])
 		const totalChildren = leftSib.children.length + rightSib.children.length
-		const minAcrossBoth = leftSib.minChildren + rightSib.minChildren
+		const minAcrossBoth = minChildren(config, rightSib) + minChildren(config, leftSib)
 		result = {
 			action: totalChildren >= minAcrossBoth ? BALANCE : MERGE,
 			index: childIndex,
@@ -54,8 +58,8 @@ function selectChildAndSiblingForMerging(api, node, childIndex) {
 	return result
 }
 
-function isUnderful(node) {
-	return node.children.length < node.minChildren
+function isUnderful(config, node) {
+	return node.children.length < minChildren(config, node)
 }
 
 /**
@@ -63,47 +67,47 @@ function isUnderful(node) {
  * invariants.
  * Returns either the passed subtree root or, if there is only a single child that child.
  */
-function removeFromNode(api, node, key) {
-	let childIndex = findChildIndex(node, key);
-	let child = api.read(node.children[childIndex])
+function removeFromNode(config, node, key) {
+	let childIndex = findChildIndex(config, node, key);
+	let child = config.api.read(node.children[childIndex])
 
-	child = remove(api, child, key)
+	child = remove(config, child, key)
 	node.children[childIndex] = child.ref
 
-	if (isUnderful(child)) {
-		const richSibling = selectChildAndSiblingForMerging(api, node, childIndex)
+	if (isUnderful(config, child)) {
+		const richSibling = selectChildAndSiblingForMerging(config, node, childIndex)
 		if (richSibling.action === BALANCE) {
 			const {index, left:leftSib, pivot:pivotBefore, right:rightSib} = richSibling
-			const {pivot} = balance(api, leftSib, pivotBefore, rightSib)
+			const {pivot} = balance(config, leftSib, pivotBefore, rightSib)
 			node.keys[index] = pivot
 		} else if (richSibling.action === MERGE) {
 			const {index, left:leftSib, pivot:pivotBefore, right:rightSib} = richSibling
-			merge(api, leftSib, pivotBefore, rightSib)
+			merge(config, leftSib, pivotBefore, rightSib)
 			node.children.splice(index + 1, 1)
 			node.keys.splice(index, 1)
 		} else {
 			throw new Error('i dont think this should happen')
 		}
-		node.store(api)
+		node.store(config)
 	}
 
 	// I'm worried that this might be wrong.  Under what circumstances should
 	// we unwrap a child?  Is it always when there is only one of them?
 	if (!node.terminalNode && node.children.length === 1) {
-		api.remove(node.ref)
-		return api.read(node.children[0])
+		config.api.remove(node.ref)
+		return config.api.read(node.children[0])
 	}
 	return node
 }
 
-function remove(api, node, key) {
+function remove(config, node, key) {
 	if (node instanceof Node === false) {
 		throw new Error(`Node to remove from must be a node, was ${node}`)
 	}
 	if (node.terminalNode) {
-		return removeFromBucket(api, node, key)
+		return removeFromBucket(config, node, key)
 	} else {
-		return removeFromNode(api, node, key)
+		return removeFromNode(config, node, key)
 	}
 }
 
@@ -111,7 +115,7 @@ function remove(api, node, key) {
  * merges two nodes together.  Afterward, all the
  * keys and children are in the node and sibling is no longer needed.
  */
-function merge(api, node, splitPoint, sibling) {
+function merge(config, node, splitPoint, sibling) {
 	node.children = node.children.concat(sibling.children)
 	if (node.terminalNode) {
 		node.keys = node.keys.concat(sibling.keys)
@@ -119,22 +123,22 @@ function merge(api, node, splitPoint, sibling) {
 
 		const nextRef = sibling.nextBucket
 		if (nextRef !== undefined) {
-			const newNext = api.read(nextRef)
+			const newNext = config.api.read(nextRef)
 			newNext.prevBucket = node.ref
-			newNext.store(api)
+			newNext.store(config)
 		}
 	} else {
 		node.keys = node.keys.concat(splitPoint, sibling.keys)
 	}
-	node.store(api)
-	api.remove(sibling.ref)
+	node.store(config)
+	config.api.remove(sibling.ref)
 }
 
 /**
  * Tries to split the children across two nodes evenly.
  * Mutates both children.
  */
-function balance(api, node, splitPoint, sibling) {
+function balance(config, node, splitPoint, sibling) {
 	const allChildren = node.children.slice().concat(sibling.children)
 	let middle = Math.floor(allChildren.length / 2)
 	let allKeys
@@ -148,8 +152,8 @@ function balance(api, node, splitPoint, sibling) {
 		node.resetData(allKeys.slice(0, middle), allChildren.slice(0, middle + 1))
 		sibling.resetData(allKeys.slice(middle + 1), allChildren.slice(middle + 1))
 	}
-	node.store(api)
-	sibling.store(api)
+	node.store(config)
+	sibling.store(config)
 	return {left: node, pivot: allKeys[middle], right: sibling}
 }
 

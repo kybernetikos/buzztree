@@ -1,6 +1,6 @@
 const {find} = require('./find')
 const {test} = require('ava')
-const {n, b, kv, binder, api} = require('../utils/testutils')
+const {n, b, kv, binder, config} = require('../utils/testutils')
 
 test('b-tree.find can find items that are in a really simple tree', (t) => {
 	const {is} = binder(t)
@@ -11,9 +11,9 @@ test('b-tree.find can find items that are in a really simple tree', (t) => {
 
 	const smallTree = n([3, 9], [b1, b2, b3])
 
-	is(find(api, smallTree, 1), undefined)
-	is(find(api, smallTree, 2), 'two')
-	is(find(api, smallTree, 3), 'three')
-	is(find(api, smallTree, 8), undefined)
-	is(find(api, smallTree, 9), 'nine')
+	is(find(config, smallTree, 1), undefined)
+	is(find(config, smallTree, 2), 'two')
+	is(find(config, smallTree, 3), 'three')
+	is(find(config, smallTree, 8), undefined)
+	is(find(config, smallTree, 9), 'nine')
 })

@@ -1,14 +1,14 @@
 class Node {
-	constructor(minChildren, maxChildren, keyCompareFn, keys, children) {
-		Object.assign(this, {ref: undefined, minChildren, maxChildren, keyCompareFn, keys, children})
+	constructor(keys, children) {
+		Object.assign(this, {ref: undefined, keys, children})
 	}
 
 	//noinspection JSUnusedGlobalSymbols
-	*iterator(api) {
-		yield* this.rangeIterator(api)
+	*iterator(config) {
+		yield* this.rangeIterator(config)
 	}
 
-	store(api) {
+	store({api}) {
 		if (this.ref === undefined) {
 			this.ref = api.create(this)
 		} else {

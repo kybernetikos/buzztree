@@ -1,11 +1,11 @@
 const findIndex = require('./binarySearch')
 const Node = require('../data/Node')
 
-function findChildIndex(node, key) {
+function findChildIndex(config, node, key) {
 	if (node instanceof Node === false) {
 		throw new Error('node must be a node, was ' + node)
 	}
-	let i = findIndex(node.keyCompareFn, key, node.keys)
+	let i = findIndex(config.keyCompareFn, key, node.keys)
 	if (node.terminalNode) {
 		return i
 	}

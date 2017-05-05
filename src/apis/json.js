@@ -1,23 +1,19 @@
 const InternalNode = require('../data/InternalNode')
 const Bucket = require('../data/Bucket')
 
-function numCompare(a, b) {
-	return a - b
-}
-
 const cache = {}
 let current = 0
 const api = {
 	create(node) {
 		const result = current++
-		const {minChildren, maxChildren, keys, children, terminalNode, nextBucket, prevBucket} = node
-		cache[result] = JSON.stringify({minChildren, maxChildren, keys, children, terminalNode, nextBucket, prevBucket})
+		const {keys, children, terminalNode, nextBucket, prevBucket} = node
+		cache[result] = JSON.stringify({keys, children, terminalNode, nextBucket, prevBucket})
 		console.log('create', result,  cache[result])
 		return result
 	},
 	update(id, node) {
-		const {minChildren, maxChildren, keys, children, terminalNode, nextBucket, prevBucket} = node
-		cache[id] = JSON.stringify({minChildren, maxChildren, keys, children, terminalNode, nextBucket, prevBucket})
+		const {keys, children, terminalNode, nextBucket, prevBucket} = node
+		cache[id] = JSON.stringify({keys, children, terminalNode, nextBucket, prevBucket})
 		console.log('update id ', id,  cache[id])
 	},
 	read(id) {
@@ -25,12 +21,12 @@ const api = {
 		if (!cache[id]) {
 			throw new Error("could not find id="+id)
 		}
-		const {minChildren, maxChildren, keys, children, terminalNode, nextBucket, prevBucket} = JSON.parse(cache[id])
+		const {keys, children, terminalNode, nextBucket, prevBucket} = JSON.parse(cache[id])
 		let result
 		if (terminalNode) {
-			result = new Bucket(minChildren, maxChildren, numCompare, keys, children, nextBucket, prevBucket)
+			result = new Bucket(keys, children, nextBucket, prevBucket)
 		} else {
-			result = new InternalNode(minChildren, maxChildren, numCompare, keys, children)
+			result = new InternalNode(keys, children)
 		}
 		result.ref = id
 		return result
