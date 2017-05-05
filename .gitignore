@@ -24,4 +24,5 @@ typings/
 *.tgz
 .yarn-integrity
 .env
-.idea/
+workspace.xml
+tasks.xml
