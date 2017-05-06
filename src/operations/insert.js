@@ -64,6 +64,7 @@ function insertIntoBucket(config, bucket, key, value) {
 	}
 	bucket.keys.splice(-index-1, 0, key)
 	bucket.children.splice(-index-1, 0, value)
+	store(config, bucket)
 	const result = splitIfNecessary(config, bucket)
 	store(config, result)
 	return result

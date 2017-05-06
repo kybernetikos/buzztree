@@ -11,16 +11,19 @@ class BPlus {
 	constructor(ref = undefined, api = apis.json, keyCompareFn = naturalCompare, maxNodeChildren = 3) {
 		this.config = new TreeConfig(api, keyCompareFn, maxNodeChildren)
 		this.ref = ref
-		if (ref === undefined) {
+		this.root = undefined
+
+		if (ref !== undefined) {
+			Object.assign(this, api.read(ref))
+		}
+
+		if (this.root === undefined) {
 			this.root = new Bucket()
 			ops.store(this.config, this.root)
 			this.rootRef = this.root.ref
-
 			ops.store(this.config, this)
-		} else {
-			Object.assign(this, api.read(ref))
-			this.rootRef = this.root.ref
 		}
+		this.rootRef = this.root.ref
 	}
 
 	set(key, value) {
@@ -57,6 +60,6 @@ function updateRoot(node, result) {
 	if (result !== node.root) {
 		node.root = result
 		node.rootRef = result.ref
-		ops.store(node.config, node)
 	}
+	ops.store(node.config, node)
 }
